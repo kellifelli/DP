@@ -6,7 +6,7 @@
             "command": "dotnet",
             "type": "process",
             "args": [
-                "build",
+                "run",
                 "${workspaceFolder}/DP.csproj"
             ],
             "problemMatcher": "$msCompile"
