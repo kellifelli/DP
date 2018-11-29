@@ -32,19 +32,6 @@ namespace DP
                 u++;
             }
         }
-
-        public Bitmap PreProcess(Bitmap bmp)
-        {
-            //Those are AForge filters "using Aforge.Imaging.Filters;"
-            Grayscale gfilter = new Grayscale(0.2125, 0.7154, 0.0721);
-            Invert ifilter = new Invert();
-            BradleyLocalThresholding thfilter = new BradleyLocalThresholding();
-            bmp = gfilter.Apply(bmp);
-            thfilter.ApplyInPlace(bmp);
-            ifilter.ApplyInPlace(bmp);
-            return bmp;
-        }
-
         static Bitmap ModryOkraj(string obrazek)
         {
 
@@ -118,7 +105,7 @@ namespace DP
             }
 
             //vytahni barvu
-                      ColorFiltering filterBrown = new ColorFiltering();
+            ColorFiltering filterBrown = new ColorFiltering();
             filterBrown.Red = new IntRange(35, 45);
             filterBrown.Green = new IntRange(32, 42);
             filterBrown.Blue = new IntRange(30, 40);
@@ -168,13 +155,5 @@ namespace DP
             }
             return image;
         }
-
-
-
-
-
-
-
-
     }
 }
