@@ -3,4 +3,8 @@
 *.so
 *.dylib
 *.dll
-*.dpb
+*.pdb
+*.*.json
+*.deps.json
+*.*.cache
+*.csproj.*
