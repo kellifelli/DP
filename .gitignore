@@ -8,3 +8,4 @@
 *.deps.json
 *.*.cache
 *.csproj.*
+*.png
