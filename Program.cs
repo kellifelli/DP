@@ -23,21 +23,39 @@ namespace DP
 
         static void OrezaniObrazkuVeSlozce(string[] directory)
         {
+            var hodiny = System.Diagnostics.Stopwatch.StartNew();
+
+            //Bitmap bezModreho = ModryOkraj(obrazek);
+            int[] rozmery = ModryOkraj(directory[0]);
             int u = 1;
             foreach (string obrazek in directory)
             {
-
-                Bitmap bezModreho = ModryOkraj(obrazek);
+                var hodinyObrazku = System.Diagnostics.Stopwatch.StartNew();
+                // vyrezu obrazek
+                Rectangle vyrez = new Rectangle(rozmery[0], rozmery[1], rozmery[2], rozmery[3]);
+                // ulozim vyrezany
+                Bitmap image = (Bitmap)Bitmap.FromFile(obrazek);
+                Bitmap bezModreho = image.Clone(vyrez, image.PixelFormat);
                 bezModreho.Save("output\\01\\" + u + ".png", ImageFormat.Png);
+                
+                hodinyObrazku.Stop();
+                Console.WriteLine("To byl " + u + "/" + directory.Length + " obrazek. Trval " + hodinyObrazku.Elapsed.TotalSeconds + ". Celkem uz jedu " + hodiny.Elapsed.TotalSeconds + " sekund." );
                 u++;
             }
+
+            hodiny.Stop();
+            Console.WriteLine("Celej set o " + directory.Length + " obrazcich trval: " + hodiny.Elapsed.TotalSeconds + " sekund. (V minutách: " + hodiny.Elapsed.TotalMinutes);
         }
-        static Bitmap ModryOkraj(string obrazek)
+        static int[] ModryOkraj(string obrazek)
         {
 
             // nactu obrazek
             Bitmap image = (Bitmap)Bitmap.FromFile(obrazek);
             Bitmap puvodniImage = (Bitmap)Bitmap.FromFile(obrazek);
+            //
+            int[] rozmery = new int[4];
+            int noveX = 0;
+            int noveY = 0;
 
             //vytahnuti modre
             ColorFiltering filterBlue = new ColorFiltering();
@@ -88,8 +106,8 @@ namespace DP
                         /* Tady zpracuju rohove body a vypocitam si vzdalenosti */
                         int novaSirka = (poleRohu[2].X - poleRohu[0].X);
                         int novaVyska = (poleRohu[3].Y - poleRohu[1].Y);
-                        int noveX = poleRohu[0].X;
-                        int noveY = poleRohu[1].Y;
+                        noveX = poleRohu[0].X;
+                        noveY = poleRohu[1].Y;
 
                         // vyrezu obrazek
                         Rectangle vyrez = new Rectangle(noveX, noveY, novaSirka, novaVyska);
@@ -140,20 +158,15 @@ namespace DP
                         poleRohu = Points.ToArray();
 
                         /* Tady zpracuju rohove body a vypocitam si vzdalenosti */
-                        int novaSirka = (poleRohu[2].X - poleRohu[0].X);
-                        int novaVyska = (poleRohu[3].Y - poleRohu[1].Y);
-                        int noveX = poleRohu[0].X;
-                        int noveY = poleRohu[1].Y;
-
-                        // vyrezu obrazek
-                        Rectangle vyrez = new Rectangle(noveX, noveY, novaSirka, novaVyska);
-                        // ulozim vyrezany
-                        image = puvodniImage.Clone(vyrez, puvodniImage.PixelFormat);
+                        rozmery[2] = (poleRohu[2].X - poleRohu[0].X);
+                        rozmery[3] = (poleRohu[3].Y - poleRohu[1].Y);
+                        rozmery[0] = poleRohu[0].X + noveX;
+                        rozmery[1] = poleRohu[1].Y + noveY;
 
                     }
                 }
             }
-            return image;
+            return rozmery;
         }
     }
 }
