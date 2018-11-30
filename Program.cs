@@ -15,9 +15,65 @@ namespace DP
         static void Main(string[] args)
         {
             string[] filePaths = Directory.GetFiles("temp\\01\\", "*.png", SearchOption.TopDirectoryOnly);
-            OrezaniObrazkuVeSlozce(filePaths);
+            //OrezaniObrazkuVeSlozce(filePaths);
+            //ted mam v temp\\orezany\\01 orezany obrazky a ve filePaths mam jejich nazvy
+            DetekceKrizku();
+
+
 
         }
+
+        static void DetekceKrizku()
+        {
+            
+            Bitmap obrazek = (Bitmap)Bitmap.FromFile("temp\\orezany\\01\\1.png");
+            Bitmap vzor = (Bitmap)Bitmap.FromFile("temp\\1_vzor.png");
+
+            ExhaustiveTemplateMatching tm = new ExhaustiveTemplateMatching(0.921f);
+            
+            TemplateMatch[] matchings = tm.ProcessImage(obrazek, vzor);
+
+            BitmapData data = obrazek.LockBits(
+                                new Rectangle(0, 0, obrazek.Width, obrazek.Height),
+                                ImageLockMode.ReadWrite, obrazek.PixelFormat);
+            foreach (TemplateMatch m in matchings)
+            {
+
+                Drawing.Rectangle(data, m.Rectangle, Color.White);
+
+                Console.WriteLine(m.Rectangle.Location.ToString());
+            
+            }
+            obrazek.UnlockBits(data);
+
+            
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         /*Metoda která dostane jako vstup pole s nazvy souboru a pokusí se načíst všechny obrazky a ořezat a uložit je do nové složky*/
 
@@ -36,15 +92,15 @@ namespace DP
                 // ulozim vyrezany
                 Bitmap image = (Bitmap)Bitmap.FromFile(obrazek);
                 Bitmap bezModreho = image.Clone(vyrez, image.PixelFormat);
-                bezModreho.Save("output\\01\\" + u + ".png", ImageFormat.Png);
-                
+                bezModreho.Save("temp\\orezany\\01\\" + u + ".png", ImageFormat.Png);
+
                 hodinyObrazku.Stop();
-                Console.WriteLine("To byl " + u + "/" + directory.Length + " obrazek. Trval " + hodinyObrazku.Elapsed.TotalSeconds + ". Celkem uz jedu " + hodiny.Elapsed.TotalSeconds + " sekund." );
+                Console.WriteLine("To byl " + u + "/" + directory.Length + " obrazek. Trval " + hodinyObrazku.Elapsed.TotalSeconds + ". Celkem uz jedu " + hodiny.Elapsed.TotalSeconds + " sekund.");
                 u++;
             }
 
             hodiny.Stop();
-            Console.WriteLine("Celej set o " + directory.Length + " obrazcich trval: " + hodiny.Elapsed.TotalSeconds + " sekund. (V minutách: " + hodiny.Elapsed.TotalMinutes);
+            Console.WriteLine("Celej set o " + directory.Length + " obrazcich trval: " + hodiny.Elapsed.TotalSeconds + " sekund. (V minutách: " + hodiny.Elapsed.TotalMinutes + ".)");
         }
         static int[] ModryOkraj(string obrazek)
         {
