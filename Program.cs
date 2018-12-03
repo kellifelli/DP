@@ -14,57 +14,119 @@ namespace DP
     {
         static void Main(string[] args)
         {
-            string[] filePaths = Directory.GetFiles("temp\\01\\", "*.png", SearchOption.TopDirectoryOnly);
+            string[] filePaths = Directory.GetFiles("temp\\orezany\\01\\", "*.png", SearchOption.TopDirectoryOnly);
             //OrezaniObrazkuVeSlozce(filePaths);
             //ted mam v temp\\orezany\\01 orezany obrazky a ve filePaths mam jejich nazvy
-            DetekceKrizku();
-
+            DetekceKrizku(filePaths);
 
 
         }
 
-        static void DetekceKrizku()
+        static void DetekceKrizku(string[] slozka)
         {
-            
-            Bitmap obrazek = (Bitmap)Bitmap.FromFile("temp\\orezany\\01\\1.png");
             Bitmap vzor = (Bitmap)Bitmap.FromFile("temp\\1_vzor.png");
-
-            ExhaustiveTemplateMatching tm = new ExhaustiveTemplateMatching(0.921f);
-            
-            TemplateMatch[] matchings = tm.ProcessImage(obrazek, vzor);
-
-            BitmapData data = obrazek.LockBits(
-                                new Rectangle(0, 0, obrazek.Width, obrazek.Height),
-                                ImageLockMode.ReadWrite, obrazek.PixelFormat);
-            foreach (TemplateMatch m in matchings)
+            int u = 1;
+            foreach (string soubor in slozka)
             {
+                var hodiny = System.Diagnostics.Stopwatch.StartNew();
+                Bitmap obrazek = (Bitmap)Bitmap.FromFile(soubor);
 
-                Drawing.Rectangle(data, m.Rectangle, Color.White);
 
-                Console.WriteLine(m.Rectangle.Location.ToString());
-            
+                Grayscale filter = new Grayscale(0.2125, 0.7154, 0.0721);
+                // apply the filter
+                Bitmap obrazekSedy = filter.Apply(obrazek);
+                Bitmap vzorSedy = filter.Apply(vzor);
+
+
+
+                // create filter
+                ResizeBilinear filterSize1 = new ResizeBilinear(obrazek.Width * 7 / 12, obrazek.Height * 7 / 12);
+                ResizeBilinear filterSize2 = new ResizeBilinear(vzor.Width * 7 / 12, vzor.Height * 7 / 12);
+                // apply the filter
+                obrazekSedy = filterSize1.Apply(obrazekSedy);
+                vzorSedy = filterSize2.Apply(vzorSedy);
+                obrazek = filterSize1.Apply(obrazek);
+
+                ExhaustiveTemplateMatching tm = new ExhaustiveTemplateMatching(0.962f);
+                TemplateMatch[] matchings = tm.ProcessImage(obrazekSedy, vzorSedy);
+
+                BitmapData data = obrazek.LockBits(
+                                    new Rectangle(0, 0, obrazek.Width, obrazek.Height),
+                                    ImageLockMode.ReadWrite, obrazek.PixelFormat);
+                //int[] souradniceX = new int[9];
+                //int[] souradniceY = new int[10];
+
+                List<int> souradniceX = new List<int>();
+                List<int> souradniceY = new List<int>();
+
+                List<int> rozdilyX = new List<int>();
+
+
+                foreach (TemplateMatch m in matchings)
+                {
+                    //Drawing.Rectangle(data, m.Rectangle, Color.Red);
+                    int x = m.Rectangle.Location.X + m.Rectangle.Width / 2;
+                    int y = m.Rectangle.Location.Y + m.Rectangle.Height / 2;
+                    if (!souradniceX.Contains(m.Rectangle.Location.X))
+                    {
+                        souradniceX.Add(m.Rectangle.Location.X);
+                    }
+
+                    if (!souradniceY.Contains(m.Rectangle.Location.Y))
+                    {
+                        souradniceY.Add(m.Rectangle.Location.Y);
+                    }
+                     Drawing.Rectangle(data, new Rectangle(x, y, 1, 1), Color.Red);
+
+                }
+
+                obrazek.UnlockBits(data);
+                obrazek.Save("temp\\krizky\\" + u + ".png");
+
+                hodiny.Stop();
+                Console.WriteLine(u + "ty obrazek trval" + hodiny.Elapsed.TotalSeconds);
+                u++;
+
+
+
+
+
+                souradniceX.Sort();
+                souradniceY.Sort();
+
+                for (int i = 0; i < souradniceX.Count; i++)
+                {
+                    for (int j = 0; j < souradniceX.Count; j++)
+                    {
+                        int sirka = 0;
+                        if (i < j)
+                        {
+                            sirka = souradniceX[j] - souradniceX[i];
+                        }
+                        else if (i > j)
+                        {
+                            sirka = souradniceX[i] - souradniceX[j];
+                        }
+
+                        if (sirka > 3)
+                        {
+                            if (!rozdilyX.Contains(sirka))
+                            {
+                                rozdilyX.Add(sirka);
+                            }
+
+                        }
+                    }
+                }
+
+                rozdilyX.Sort();
+                for (int i = 0; i < rozdilyX.Count; i++)
+                {
+                    Console.WriteLine(rozdilyX[i]);
+                }
+                
             }
-            obrazek.UnlockBits(data);
-
-            
-
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
