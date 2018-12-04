@@ -59,24 +59,19 @@ namespace DP
                 List<int> souradniceX = new List<int>();
                 List<int> souradniceY = new List<int>();
 
-                List<int> rozdilyX = new List<int>();
-
 
                 foreach (TemplateMatch m in matchings)
                 {
-                    //Drawing.Rectangle(data, m.Rectangle, Color.Red);
+
                     int x = m.Rectangle.Location.X + m.Rectangle.Width / 2;
                     int y = m.Rectangle.Location.Y + m.Rectangle.Height / 2;
-                    if (!souradniceX.Contains(m.Rectangle.Location.X))
-                    {
-                        souradniceX.Add(m.Rectangle.Location.X);
-                    }
+                    souradniceX.Add(x);
+                    souradniceY.Add(y);
 
-                    if (!souradniceY.Contains(m.Rectangle.Location.Y))
-                    {
-                        souradniceY.Add(m.Rectangle.Location.Y);
-                    }
-                     Drawing.Rectangle(data, new Rectangle(x, y, 1, 1), Color.Red);
+                    //Drawing.Rectangle(data, m.Rectangle, Color.Red);
+                    //vykresleni bodu - stredu nalezeneho krizku
+
+                    Drawing.Rectangle(data, new Rectangle(x, y, 1, 1), Color.Red);
 
                 }
 
@@ -87,44 +82,98 @@ namespace DP
                 Console.WriteLine(u + "ty obrazek trval" + hodiny.Elapsed.TotalSeconds);
                 u++;
 
-
-
-
-
                 souradniceX.Sort();
                 souradniceY.Sort();
-
+                //2d pole v prvnim sloupci je hodnota x stredu a ve druhem je hodnota sloupce ve kterem se nachazi
+                int[,] souradniceXX = new int[souradniceX.Count, 2];
+                int sloupec = 1;
                 for (int i = 0; i < souradniceX.Count; i++)
                 {
-                    for (int j = 0; j < souradniceX.Count; j++)
+                    souradniceXX[i, 0] = souradniceX[i];
+                    souradniceXX[i, 1] = sloupec;
+                    if (i + 1 < souradniceX.Count)
                     {
-                        int sirka = 0;
-                        if (i < j)
+                        if (souradniceX[i + 1] - souradniceX[i] > 10)
                         {
-                            sirka = souradniceX[j] - souradniceX[i];
-                        }
-                        else if (i > j)
-                        {
-                            sirka = souradniceX[i] - souradniceX[j];
-                        }
-
-                        if (sirka > 3)
-                        {
-                            if (!rozdilyX.Contains(sirka))
-                            {
-                                rozdilyX.Add(sirka);
-                            }
-
+                            sloupec++;
                         }
                     }
                 }
 
-                rozdilyX.Sort();
-                for (int i = 0; i < rozdilyX.Count; i++)
+                int[,] souradniceYY = new int[souradniceY.Count, 2];
+                int radek = 1;
+                for (int i = 0; i < souradniceY.Count; i++)
                 {
-                    Console.WriteLine(rozdilyX[i]);
+                    souradniceYY[i, 0] = souradniceY[i];
+                    souradniceYY[i, 1] = radek;
+                    if (i + 1 < souradniceY.Count)
+                    {
+                        if (souradniceY[i + 1] - souradniceY[i] > 10)
+                        {
+                            radek++;
+                        }
+                    }
+                    //  Console.WriteLine("y: " + souradniceYY[i, 0] + "je ve radku " + souradniceYY[i, 1]);
                 }
-                
+
+                int prumer = 0;
+                int suma = 0;
+                int pocet = 0;
+                List<int> prumeryX = new List<int>();
+                List<int> prumeryY = new List<int>();
+
+
+                for (int i = 1; i < souradniceX.Count; i++)
+                {
+
+                    if (souradniceXX[i, 1] == souradniceXX[i - 1, 1])
+                    {
+                        suma = suma + souradniceXX[i - 1, 0];
+                        pocet++;
+                    }
+                    else
+                    {
+                        prumer = (int)(suma / pocet);
+                        prumeryX.Add(prumer);
+                        suma = 0;
+                        pocet = 0;
+                    }
+
+
+                }
+                suma = 0;
+                pocet = 0;
+                for (int i = 1; i < souradniceY.Count; i++)
+                {
+                    if (souradniceYY[i, 1] == souradniceYY[i - 1, 1])
+                    {
+                        suma = suma + souradniceYY[i - 1, 0];
+                        pocet++;
+                    }
+                    else
+                    {
+                        prumer = (int)(suma / pocet);
+                        prumeryY.Add(prumer);
+                        suma = 0;
+                        pocet = 0;
+                    }
+
+
+                }
+
+
+                for (int i = 0; i < prumeryX.Count; i++)
+                {
+                    Console.WriteLine(prumeryX[i]);
+                }
+                Console.WriteLine();
+                for (int i = 0; i < prumeryY.Count; i++)
+                {
+                    Console.WriteLine(prumeryY[i]);
+                }
+
+                if (u > 1) { break; }
+
             }
         }
 
