@@ -7,5 +7,4 @@
 *.*.json
 *.deps.json
 *.*.cache
-*.csproj.*
 *.png
