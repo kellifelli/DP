@@ -12,14 +12,57 @@ namespace DP
 {
     class RozrezaniNaMisky
     {
-        public static void DetekceKrizku(string[] slozka)
+
+        static void RozrezObrazkyVeSlozce(string slozka)
         {
-            Bitmap vzor = (Bitmap)Bitmap.FromFile("temp\\1_vzor.png");
+
+
+
+
+
+        }
+
+
+
+
+
+        static string ZiskejNazev(string obrazek)
+        {
+            string prvni_slovo = "\\";
+            string druhe_slovo = ".png";
+            int first = obrazek.LastIndexOf(prvni_slovo);
+            int last = obrazek.LastIndexOf(druhe_slovo);
+            string bezRound = obrazek.Substring(0, last);
+            string bezFirst = obrazek.Substring(0, first + prvni_slovo.Length);
+
+            return obrazek.Substring(bezFirst.Length, bezRound.Length - bezFirst.Length);
+        }
+
+
+
+
+
+
+        public static void DetekceKrizku(string slozka)
+        {
+            var hodinyKomplet = System.Diagnostics.Stopwatch.StartNew();
+            Console.WriteLine("Zacinam nacitat orezeny obrazky a rozdelavat je na misky.");
+            string[] slozkaObrazku = Directory.GetFiles(slozka, "*.png", SearchOption.TopDirectoryOnly);
+            string umisteniVzoru = "temp\\1_vzor.png";
+            string umisteniMisek = slozka + "misky\\";
+            string vykresleniKrizku = slozka + "krizky\\";
+            Bitmap vzor = (Bitmap)Bitmap.FromFile(umisteniVzoru);
 
             int u = 1;
-            foreach (string soubor in slozka)
+            foreach (string soubor in slozkaObrazku)
             {
+                /*tadz kdyz efektivne zjistim nazev souboru a nahradit ho nazvem obrazku, ale to uz asi musim na zacatku */
+
+
                 var hodiny = System.Diagnostics.Stopwatch.StartNew();
+                string nazevObrazku = ZiskejNazev(soubor);
+
+                Console.WriteLine("jedu " + u + "-ty obrazek.");
                 //naètení obrazku
                 Bitmap obrazek = (Bitmap)Bitmap.FromFile(soubor);
                 // Definice filtrù - šedá, velikost
@@ -205,7 +248,7 @@ namespace DP
                         //jdu prochazet radek a rozrezu ho na misky - ctverce
                         for (int j = 0; j <= prumeryX.Count; j++)
                         {
-                            Directory.CreateDirectory("temp\\misky\\" + jj);
+                            Directory.CreateDirectory(umisteniMisek + jj);
                             if (j == 0) // prvni
                             {
                                 sirkaSloupce = prumeryX[j];
@@ -222,16 +265,19 @@ namespace DP
                                 rohX = prumeryX[(j - 1)];
                             }
                             Bitmap obrazekMiska = obrazek.Clone(new Rectangle(rohX, rohY, sirkaSloupce, obrazekRadek.Height), obrazekRadek.PixelFormat);
-                            obrazekMiska.Save("temp\\misky\\" + jj + "\\" + u + ".png");
+                            obrazekMiska.Save(umisteniMisek + jj + "\\" + nazevObrazku + ".png");
                             jj++;
                         }
                     }
                 }
+
                 obrazek.UnlockBits(data);
-                obrazek.Save("temp\\krizky\\" + u + ".png");
+
+                Directory.CreateDirectory(vykresleniKrizku);
+                obrazek.Save(vykresleniKrizku + nazevObrazku + ".png");
 
                 hodiny.Stop();
-                Console.WriteLine(u + "ty obrazek trval" + hodiny.Elapsed.TotalSeconds);
+                Console.WriteLine("Rozrezani obrazku na misky, " + u + "-ty obrazek trval: " + hodiny.Elapsed.TotalSeconds + ". Celkem uz jedu: " + hodinyKomplet.Elapsed.TotalMinutes + " minut.");
                 u++;
                 //if (u > 1) { break; }
             }

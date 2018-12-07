@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.IO;
 using AForge;
 using AForge.Imaging;
 using AForge.Imaging.Filters;
@@ -13,29 +13,55 @@ namespace DP
     public static class OrezKraju
     {
         /*Metoda která dostane jako vstup pole s nazvy souboru a pokusí se naèíst všechny obrazky a oøezat a uložit je do nové složky*/
-        public static void OrezaniObrazkuVeSlozce(string[] directory)
+        public static string OrezaniObrazkuVeSlozce(string nazevSlozky)
         {
             var hodiny = System.Diagnostics.Stopwatch.StartNew();
+
+            string nazevSlozkyOrezanych = nazevSlozky + "orezany\\";
+
+            Directory.CreateDirectory(nazevSlozkyOrezanych);
+
+            string[] directory = Directory.GetFiles(nazevSlozky, "*.png", SearchOption.TopDirectoryOnly);
+
+            Console.WriteLine("Z prvniho obrazku vytahuji rozmery.");
 
             int[] rozmery = ModryOkraj(directory[0]);
             int u = 1;
             foreach (string obrazek in directory)
             {
                 var hodinyObrazku = System.Diagnostics.Stopwatch.StartNew();
-                // vyrezu obrazek
-                Rectangle vyrez = new Rectangle(rozmery[0], rozmery[1], rozmery[2], rozmery[3]);
                 // ulozim vyrezany
                 Bitmap image = (Bitmap)Bitmap.FromFile(obrazek);
-                Bitmap bezModreho = image.Clone(vyrez, image.PixelFormat);
-                bezModreho.Save("temp\\orezany\\01\\" + u + ".png", ImageFormat.Png);
+                Bitmap bezModreho = image.Clone(new Rectangle(rozmery[0], rozmery[1], rozmery[2], rozmery[3]), image.PixelFormat);
+                /*tady musim nejak efektivne ziskat nazev obrazku */
+                string nazevObr = ZiskejNazev(obrazek);
+
+
+
+                bezModreho.Save(nazevSlozkyOrezanych + nazevObr + ".png", ImageFormat.Png);
 
                 hodinyObrazku.Stop();
-                Console.WriteLine("To byl " + u + "/" + directory.Length + " obrazek. Trval " + hodinyObrazku.Elapsed.TotalSeconds + ". Celkem uz jedu " + hodiny.Elapsed.TotalSeconds + " sekund.");
+                Console.WriteLine("To byl " + u + "/" + directory.Length + " obrazek. Trval " + hodinyObrazku.Elapsed.TotalSeconds + " sekund. Celkem uz jedu " + hodiny.Elapsed.TotalSeconds + " sekund.");
                 u++;
             }
 
             hodiny.Stop();
             Console.WriteLine("Celej set o " + directory.Length + " obrazcich trval: " + hodiny.Elapsed.TotalSeconds + " sekund. (V minutách: " + hodiny.Elapsed.TotalMinutes + ".)");
+
+            return nazevSlozkyOrezanych;
+        }
+
+        static string ZiskejNazev(string obrazek)
+        {
+            string druhe_slovo = "_round";
+            string prvni_slovo = "date-";
+
+            int first = obrazek.LastIndexOf(prvni_slovo);
+            int last = obrazek.LastIndexOf(druhe_slovo);
+            string bezRound = obrazek.Substring(0, last);
+            string bezFirst = obrazek.Substring(0, first + prvni_slovo.Length);
+
+            return obrazek.Substring(bezFirst.Length, bezRound.Length - bezFirst.Length);
         }
 
 
@@ -159,7 +185,7 @@ namespace DP
                     }
                 }
             }
-
+            Console.WriteLine("Podarilo se mi vytahnout rozmery obrazku.");
             return rozmery;
         }
 

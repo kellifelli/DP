@@ -15,11 +15,18 @@ namespace DP
         static void Main(string[] args)
         {
 
-            string[] filePaths = Directory.GetFiles("temp\\01\\", "*.png", SearchOption.TopDirectoryOnly);
-            OrezKraju.OrezaniObrazkuVeSlozce(filePaths);
+            /*
+            string slozka = "temp\\01\\";
+            string orezanyObrazky = OrezKraju.OrezaniObrazkuVeSlozce(slozka);
+
             //ted mam v temp\\orezany\\01 orezany obrazky a ve filePaths mam jejich nazvy
-            string[] orezanyObrazky = Directory.GetFiles("temp\\orezany\\01\\", "*.png", SearchOption.TopDirectoryOnly);
             RozrezaniNaMisky.DetekceKrizku(orezanyObrazky);
+*/
+
+            string miska = "temp\\01\\orezany\\misky\\25\\";
+
+            DetekceZelene.NajdiCasRustu(miska);
+            
 
 
         }
