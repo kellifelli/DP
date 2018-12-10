@@ -21,13 +21,15 @@ namespace DP
 
             //ted mam v temp\\orezany\\01 orezany obrazky a ve filePaths mam jejich nazvy
             RozrezaniNaMisky.DetekceKrizku(orezanyObrazky);
-*/
+
 
             string miska = "temp\\01\\orezany\\misky\\25\\";
 
             DetekceZelene.NajdiCasRustu(miska);
-            
+            */
 
+            Test.DetekceKrizku("temp\\01\\orezany\\");
+       
 
         }
 
