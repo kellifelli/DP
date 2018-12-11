@@ -38,7 +38,7 @@ namespace DP
 
             Grayscale filterSeda = new Grayscale(0.2125, 0.7154, 0.0721);
             //11/24 je dobrej cas a dobrej pomer cca 1/2
-            ResizeBilinear filterSize2 = new ResizeBilinear(vzor.Width * 1 / 3, vzor.Height * 1 / 3);
+            ResizeBilinear filterSize2 = new ResizeBilinear(vzor.Width * 1 / 4, vzor.Height * 1 / 4);
 
             List<System.Drawing.Point> kolekceBodu = new List<System.Drawing.Point>();
             List<RozsirenyBod> kolekceBodu2 = new List<RozsirenyBod>();
@@ -50,7 +50,7 @@ namespace DP
 
                 Bitmap obrazek = (Bitmap)Bitmap.FromFile(soubor);
 
-                ResizeBilinear filterSize1 = new ResizeBilinear(obrazek.Width * 1 / 3, obrazek.Height * 1 / 3);
+                ResizeBilinear filterSize1 = new ResizeBilinear(obrazek.Width * 1 / 4, obrazek.Height * 1 / 4);
                 //aplikace šedého filtru
                 Bitmap obrazekSedy = filterSeda.Apply(obrazek);
                 Bitmap vzorSedy = filterSeda.Apply(vzor);
@@ -103,13 +103,30 @@ namespace DP
 
             //ted musim dopocitat prumery respektive jinak urcit minimum ... kazde skupiny - mam je po X- kách 
             kolekceBodu2 = kolekceBodu2.OrderBy(p => p.X).ThenBy(p => p.Y).ToList();
+            int kolikaty = 1;
             for (int i = 0; i < kolekceBodu2.Count; i++)
             {
-                //potrebuju dat do skupiny 
-                for (int j = 0; j < kolekceBodu2.Count; j++)
+                if (kolekceBodu2[i].kolikaty == 0)
                 {
-                    if (kolekceBodu2[i].X )
-               }
+                    kolekceBodu2[i].kolikaty = kolikaty;
+                    //potrebuju dat do skupiny 
+                    for (int j = i + 1; j < kolekceBodu2.Count; j++)
+                    {
+                        if ((Math.Abs(kolekceBodu2[j].X - kolekceBodu2[i].X) < 5) && (Math.Abs(kolekceBodu2[j].Y - kolekceBodu2[i].Y) < 5))
+                        {
+                            if (kolekceBodu2[j].kolikaty == 0)
+                            {
+                                kolekceBodu2[j].kolikaty = kolikaty;
+                            }
+                        }
+                    }
+                    kolikaty++;
+                }
+
+            }
+            foreach (var item in kolekceBodu2)
+            {
+                Console.WriteLine("X: " + item.X + ", Y: " + item.Y + " kolikaty: " + item.kolikaty);
             }
 
         }
