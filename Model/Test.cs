@@ -40,7 +40,6 @@ namespace DP
             //11/24 je dobrej cas a dobrej pomer cca 1/2
             ResizeBilinear filterSize2 = new ResizeBilinear(vzor.Width * 1 / 4, vzor.Height * 1 / 4);
 
-            List<System.Drawing.Point> kolekceBodu = new List<System.Drawing.Point>();
             List<RozsirenyBod> kolekceBodu2 = new List<RozsirenyBod>();
 
             foreach (string soubor in slozkaObrazku)
@@ -68,9 +67,6 @@ namespace DP
                 foreach (TemplateMatch m in matchings)
                 {
                     Drawing.Rectangle(data, m.Rectangle, Color.Red);
-
-
-                    kolekceBodu.Add(m.Rectangle.Location);
                     kolekceBodu2.Add(new RozsirenyBod(m.Rectangle.Location.X, m.Rectangle.Location.Y));
 
 
@@ -90,26 +86,18 @@ namespace DP
 
 
             }
-            //kolekce bodu je ze vsech obrazku ... 
-            //kolekceBodu = kolekceBodu.OrderBy(p => p.X).ThenBy(p => p.Y).ToList();
-            foreach (var item in kolekceBodu)
-            {
-                //Console.WriteLine("X: " + item.X + ", Y: " + item.Y);
 
-
-
-
-            }
 
             //ted musim dopocitat prumery respektive jinak urcit minimum ... kazde skupiny - mam je po X- kách 
             kolekceBodu2 = kolekceBodu2.OrderBy(p => p.X).ThenBy(p => p.Y).ToList();
             int kolikaty = 1;
+            //tady timto cyklem si vytvorim kolekci bodu ktera ma X,Y a informaci o tom ktery bod na obrazku to je 
             for (int i = 0; i < kolekceBodu2.Count; i++)
             {
                 if (kolekceBodu2[i].kolikaty == 0)
                 {
                     kolekceBodu2[i].kolikaty = kolikaty;
-                    //potrebuju dat do skupiny 
+
                     for (int j = i + 1; j < kolekceBodu2.Count; j++)
                     {
                         if ((Math.Abs(kolekceBodu2[j].X - kolekceBodu2[i].X) < 5) && (Math.Abs(kolekceBodu2[j].Y - kolekceBodu2[i].Y) < 5))
@@ -122,11 +110,22 @@ namespace DP
                     }
                     kolikaty++;
                 }
+            }
+            foreach (var item in kolekceBodu2)
+            {
+                if (item.kolikaty == 1)
+                {
+                    Console.WriteLine("X: " + item.X + ", Y: " + item.Y + " kolikaty: " + item.kolikaty);
+                }
 
             }
             foreach (var item in kolekceBodu2)
             {
-                Console.WriteLine("X: " + item.X + ", Y: " + item.Y + " kolikaty: " + item.kolikaty);
+                if (item.kolikaty == 16)
+                {
+                    Console.WriteLine("X: " + item.X + ", Y: " + item.Y + " kolikaty: " + item.kolikaty);
+                }
+
             }
 
         }

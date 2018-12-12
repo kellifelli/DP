@@ -28,8 +28,8 @@ namespace DP
             DetekceZelene.NajdiCasRustu(miska);
             */
 
-            Test.DetekceKrizku("temp\\01\\orezany\\");
-       
+            //Test.DetekceKrizku("temp\\01\\orezany\\");
+            Console.WriteLine((int)15.5);
 
         }
 
