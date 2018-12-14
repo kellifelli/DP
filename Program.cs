@@ -26,10 +26,11 @@ namespace DP
             string miska = "temp\\01\\orezany\\misky\\25\\";
 
             DetekceZelene.NajdiCasRustu(miska);
-            */
+            
 
             Test.DetekceKrizku("temp\\01\\orezany\\");
-
+*/
+            RozrezaniNaMisky.RozrezObrazkyVeSlozce("temp\\01\\orezany\\");
         }
 
     }

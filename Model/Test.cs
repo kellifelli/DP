@@ -175,40 +175,52 @@ namespace DP
                     prumerY = 0;
                 }
             }
-
-            foreach (var item in kolekceBodu2)
+            //kolekce ktera neobsahuje vsechny  krizy obrazky
+            List<RozsirenyBod> kolekceBodu3 = new List<RozsirenyBod>();
+            kolikaty = 1;
+            for (int i = 0; i < kolekceBodu2.Count; i++)
             {
-                if (item.kolikaty == 1)
+                if (kolekceBodu2[i].kolikaty == kolikaty)
                 {
-                    Console.WriteLine("X: " + item.X + ", Y: " + item.Y + " kolikaty: " + item.kolikaty + " prumery X " + item.prumerneX + " prumery Y " + item.prumerneY);
+                    kolekceBodu3.Add(new RozsirenyBod(kolekceBodu2[i].X, kolekceBodu2[i].Y));
+                    kolikaty++;
                 }
             }
 
-            foreach (string soubor in slozkaObrazku)
+            List<int> sirky = new List<int>();
+            List<int> vysky = new List<int>();
+
+            for (int i = 0; i < kolekceBodu3.Count; i++)
             {
-                string nazevObrazku = ZiskejNazev(soubor);
-
-                Bitmap obrazek = (Bitmap)Bitmap.FromFile(soubor);
-                ResizeBilinear filterSize1 = new ResizeBilinear(obrazek.Width * 11 / 24, obrazek.Height * 11 / 24);
-
-                //zmenšení obrazkù
-
-                obrazek = filterSize1.Apply(obrazek);
-
-
-                BitmapData data = obrazek.LockBits(new Rectangle(0, 0, obrazek.Width, obrazek.Height),
-                                    ImageLockMode.ReadWrite, obrazek.PixelFormat);
-
-                foreach (var item in kolekceBodu2)
+                for (int j = i; i < kolekceBodu3.Count; i++)
                 {
-                    Drawing.Rectangle(data, new Rectangle(item.prumerneX, item.prumerneY, 2, 2), Color.Yellow);
+                    if (i > j)
+                    {
+                        if (Math.Abs(kolekceBodu3[i].X - kolekceBodu3[j].X) > 8)
+                        {
+                            sirky.Add(Math.Abs(kolekceBodu3[i].X - kolekceBodu3[j].X));
+                        }
+                        if (Math.Abs(kolekceBodu3[i].Y - kolekceBodu3[j].Y) > 8)
+                        {
+                            vysky.Add(Math.Abs(kolekceBodu3[i].Y - kolekceBodu3[j].Y));
+                        }
+                    }
                 }
-                obrazek.UnlockBits(data);
+            }
 
-                Directory.CreateDirectory(vykresleniKrizku);
-                obrazek.Save(vykresleniKrizku + nazevObrazku + "_prumer.png");
+
+
+
+            foreach (var item in sirky)
+            {
+
+                Console.WriteLine("sirky " + item);
 
             }
+
+
+
+
         }
     }
 }
