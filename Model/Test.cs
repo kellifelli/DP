@@ -13,213 +13,52 @@ namespace DP
 {
     class Test
     {
-
-
-        static string ZiskejNazev(string obrazek)
+        public static void NactiBody()
         {
-            string prvni_slovo = "\\";
-            string druhe_slovo = ".png";
-            int first = obrazek.LastIndexOf(prvni_slovo);
-            int last = obrazek.LastIndexOf(druhe_slovo);
-            string bezRound = obrazek.Substring(0, last);
-            string bezFirst = obrazek.Substring(0, first + prvni_slovo.Length);
+            string line;
+            int sirkaObrazku = 800, vyskaObrazku = 633;
 
-            return obrazek.Substring(bezFirst.Length, bezRound.Length - bezFirst.Length);
-        }
+            StreamReader sc = new StreamReader("temp\\body.txt");
 
-        public static void DetekceKrizku(string slozka)
-        {
+            List<RozsirenyBod> bodiky = new List<RozsirenyBod>();
+            bool smeNaX = true;
+            int x = 0, y = 0;
 
 
-            string[] slozkaObrazku = Directory.GetFiles(slozka, "*.png", SearchOption.TopDirectoryOnly);
-            string umisteniVzoru = "temp\\1_vzor.png";
-            string vykresleniKrizku = slozka + "\\test" + "krizky\\";
-            Bitmap vzor = (Bitmap)Bitmap.FromFile(umisteniVzoru);
 
-            Grayscale filterSeda = new Grayscale(0.2125, 0.7154, 0.0721);
-            //11/24 je dobrej cas a dobrej pomer cca 1/2
-            ResizeBilinear filterSize2 = new ResizeBilinear(vzor.Width * 11 / 24, vzor.Height * 11 / 24);
-
-            List<RozsirenyBod> kolekceBodu2 = new List<RozsirenyBod>();
-
-            foreach (string soubor in slozkaObrazku)
+            while ((line = sc.ReadLine()) != null)
             {
-                var hodiny = System.Diagnostics.Stopwatch.StartNew();
-                string nazevObrazku = ZiskejNazev(soubor);
-
-                Bitmap obrazek = (Bitmap)Bitmap.FromFile(soubor);
-
-                ResizeBilinear filterSize1 = new ResizeBilinear(obrazek.Width * 11 / 24, obrazek.Height * 11 / 24);
-                //aplikace šedého filtru
-                Bitmap obrazekSedy = filterSeda.Apply(obrazek);
-                Bitmap vzorSedy = filterSeda.Apply(vzor);
-                //zmenšení obrazkù
-                obrazekSedy = filterSize1.Apply(obrazekSedy);
-                vzorSedy = filterSize2.Apply(vzorSedy);
-                obrazek = filterSize1.Apply(obrazek);
-                //vyhledavácí alg - v ObrazekSedy vyhleda výskyty vzorSedy
-                ExhaustiveTemplateMatching tm = new ExhaustiveTemplateMatching(0.968f);
-                TemplateMatch[] matchings = tm.ProcessImage(obrazekSedy, vzorSedy);
-
-                BitmapData data = obrazek.LockBits(new Rectangle(0, 0, obrazek.Width, obrazek.Height),
-                                    ImageLockMode.ReadWrite, obrazek.PixelFormat);
-
-                foreach (TemplateMatch m in matchings)
+                if (smeNaX)
                 {
-                    Drawing.Rectangle(data, m.Rectangle, Color.Red);
-                    kolekceBodu2.Add(new RozsirenyBod((m.Rectangle.Width / 2) + m.Rectangle.Location.X, (m.Rectangle.Height / 2) + m.Rectangle.Location.Y));
-                }
-                obrazek.UnlockBits(data);
-
-                Directory.CreateDirectory(vykresleniKrizku);
-                obrazek.Save(vykresleniKrizku + nazevObrazku + ".png");
-
-                hodiny.Stop();
-                Console.WriteLine("obrazek trval " + hodiny.Elapsed.TotalSeconds);
-            }
-            //ted musim dopocitat prumery respektive jinak urcit minimum ... kazde skupiny - mam je po X- kách 
-            kolekceBodu2 = kolekceBodu2.OrderBy(p => p.X).ThenBy(p => p.Y).ToList();
-            // to že má oznaèení kolikaty = 1 neznamena ze je to prvni na obrazku, je to prvni detekovany 
-            int kolikaty = 1;
-            //tady timto cyklem si vytvorim kolekci bodu ktera ma X,Y a informaci o tom ktery bod na obrazku to je 
-            for (int i = 0; i < kolekceBodu2.Count; i++)
-            {
-                if (kolekceBodu2[i].kolikaty == 0)
-                {
-                    kolekceBodu2[i].kolikaty = kolikaty;
-
-                    for (int j = i + 1; j < kolekceBodu2.Count; j++)
-                    {
-                        if ((Math.Abs(kolekceBodu2[j].X - kolekceBodu2[i].X) < 8) && (Math.Abs(kolekceBodu2[j].Y - kolekceBodu2[i].Y) < 8))
-                        {
-                            if (kolekceBodu2[j].kolikaty == 0)
-                            {
-                                kolekceBodu2[j].kolikaty = kolikaty;
-                            }
-                        }
-                    }
-                    kolikaty++;
-                }
-            }
-
-            // pomocne promenne
-            int sumaX = 0;
-            int sumaY = 0;
-            int pocet = 0;
-            int prumerX = 0;
-            int prumerY = 0;
-            int k = 0;
-            kolekceBodu2 = kolekceBodu2.OrderBy(p => p.kolikaty).ToList();
-            for (int i = 0; i < kolekceBodu2.Count; i++)
-            {
-                if ((i + 1) < kolekceBodu2.Count) // kdyz jsem v predposlednim bode
-                {
-                    if (kolekceBodu2[i].kolikaty == kolekceBodu2[i + 1].kolikaty)
-                    {
-                        //prictu sumu a pocet kolik jich mam tech bodu 
-                        sumaX = sumaX + kolekceBodu2[i].X;
-                        sumaY = sumaY + kolekceBodu2[i].Y;
-                        pocet++;
-                    }
-                    else
-                    {
-                        sumaX = sumaX + kolekceBodu2[i].X;
-                        sumaY = sumaY + kolekceBodu2[i].Y;
-                        pocet++;
-                        prumerX = (int)Math.Round(((double)(sumaX / pocet)), 0);
-                        prumerY = (int)Math.Round(((double)(sumaY / pocet)), 0);
-                        //prictu sumu a vzpocitam prumer a pak vypocitam body a vynuluju sumu a prumer a zpetnym cyklem dosadim prumer zpatky do vsech bodu co ho jeste nemaji dopocitan
-                        //projedu zpetne
-                        k = i;
-                        while (!kolekceBodu2[k].prumerDosazen)
-                        {
-                            kolekceBodu2[k].prumerneX = prumerX;
-                            kolekceBodu2[k].prumerneY = prumerY;
-                            kolekceBodu2[k].prumerDosazen = true;
-                            if (k != 0)
-                            {
-                                k--;
-                            }
-                        }
-                        sumaX = 0;
-                        sumaY = 0;
-                        pocet = 0;
-                        prumerX = 0;
-                        prumerY = 0;
-                    }
+                    Int32.TryParse(line, out x);
+                    smeNaX = false;
                 }
                 else
                 {
-                    sumaX = sumaX + kolekceBodu2[i].X;
-                    sumaY = sumaY + kolekceBodu2[i].Y;
-                    pocet++;
-                    prumerX = (int)Math.Round(((double)(sumaX / pocet)), 0);
-                    prumerY = (int)Math.Round(((double)(sumaY / pocet)), 0);
-                    //prictu sumu a vzpocitam prumer a pak vypocitam body a vynuluju sumu a prumer a zpetnym cyklem dosadim prumer zpatky do vsech bodu co ho jeste nemaji dopocitan
-                    //projedu zpetne
-                    k = i;
-                    while (!kolekceBodu2[k].prumerDosazen)
-                    {
-                        kolekceBodu2[k].prumerneX = prumerX;
-                        kolekceBodu2[k].prumerneY = prumerY;
-                        kolekceBodu2[k].prumerDosazen = true;
-                        if (k != 0)
-                        {
-                            k--;
-                        }
-                    }
-                    sumaX = 0;
-                    sumaY = 0;
-                    pocet = 0;
-                    prumerX = 0;
-                    prumerY = 0;
+                    Int32.TryParse(line, out y);
+                    smeNaX = true;
+                    bodiky.Add(new RozsirenyBod(x, y));
                 }
             }
-            //kolekce ktera neobsahuje vsechny  krizy obrazky
-            List<RozsirenyBod> kolekceBodu3 = new List<RozsirenyBod>();
-            kolikaty = 1;
-            for (int i = 0; i < kolekceBodu2.Count; i++)
-            {
-                if (kolekceBodu2[i].kolikaty == kolikaty)
-                {
-                    kolekceBodu3.Add(new RozsirenyBod(kolekceBodu2[i].X, kolekceBodu2[i].Y));
-                    kolikaty++;
-                }
-            }
+            sc.Close();
 
             List<int> sirky = new List<int>();
-            List<int> vysky = new List<int>();
-
-            for (int i = 0; i < kolekceBodu3.Count; i++)
+            for (int i = 0; i < bodiky.Count; i++)
             {
-                for (int j = i; i < kolekceBodu3.Count; i++)
-                {
-                    if (i > j)
-                    {
-                        if (Math.Abs(kolekceBodu3[i].X - kolekceBodu3[j].X) > 8)
-                        {
-                            sirky.Add(Math.Abs(kolekceBodu3[i].X - kolekceBodu3[j].X));
-                        }
-                        if (Math.Abs(kolekceBodu3[i].Y - kolekceBodu3[j].Y) > 8)
-                        {
-                            vysky.Add(Math.Abs(kolekceBodu3[i].Y - kolekceBodu3[j].Y));
-                        }
-                    }
+                for (int j = i + 1; j < bodiky.Count; j++)
+                {   
+                   int sirka = bodiky[j].X - bodiky[i].X;
+                   if (sirka > 5) 
+                   sirky.Add(sirka);     
                 }
             }
 
-
-
-
-            foreach (var item in sirky)
+            foreach (int item in sirky)
             {
-
-                Console.WriteLine("sirky " + item);
-
+                Console.WriteLine(item);
             }
 
-
-
+            // tak tady mam nacteny bodiky. v originale bude "seznamNalezenychKrizku" nebo tak neco
 
         }
     }

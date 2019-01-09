@@ -14,23 +14,16 @@ namespace DP
     {
         static void Main(string[] args)
         {
-
-            /*
-            string slozka = "temp\\01\\";
-            string orezanyObrazky = OrezKraju.OrezaniObrazkuVeSlozce(slozka);
+            // string slozka = "temp\\01\\";
+            // string orezanyObrazky = OrezKraju.OrezaniObrazkuVeSlozce(slozka);
 
             //ted mam v temp\\orezany\\01 orezany obrazky a ve filePaths mam jejich nazvy
-            RozrezaniNaMisky.DetekceKrizku(orezanyObrazky);
+            //RozrezaniNaMisky.RozrezObrazkyVeSlozce(orezanyObrazky);
 
 
-            string miska = "temp\\01\\orezany\\misky\\25\\";
-
-            DetekceZelene.NajdiCasRustu(miska);
-            
-
-            Test.DetekceKrizku("temp\\01\\orezany\\");
-*/
             RozrezaniNaMisky.RozrezObrazkyVeSlozce("temp\\01\\orezany\\");
+
+            //Test.NactiBody();
         }
 
     }
