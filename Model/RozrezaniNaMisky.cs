@@ -20,50 +20,15 @@ namespace DP
         {
             /* Projdu všechny obrázky a získám souøadnice køížkù, které lze detekovat. */
             List<RozsirenyBod> souradniceZiskanychKrizu = ZiskejKrizkyZeVsechObrazku(slozka);
+            /* Z nalezenych krizku dopocitam prumerny X a prumerny Y a dopocitam chybejici krizky at jich mam 90*/
+            List<RozsirenyBod> dopocitaneKrizky = DopocitejOstatniBody(souradniceZiskanychKrizu, slozka);
 
-            /* Pokusik  zakreslení obrazku s nalezenými køížky - smazat, todle nepotøebuji  2018 01 08 v tento den napsáno*/
-            string[] slozkaObrazku = Directory.GetFiles(slozka, "*.png", SearchOption.TopDirectoryOnly);
-            Bitmap obrazek = (Bitmap)Bitmap.FromFile(slozkaObrazku[0]);
-            ResizeBilinear filterSize1 = new ResizeBilinear(obrazek.Width / zmencovaciKonstanta, obrazek.Height / zmencovaciKonstanta);
-            /* Na  obrázek použiji èernobílý filter a zmenším ho. */
-
-            obrazek = filterSize1.Apply(obrazek);
-            BitmapData data = obrazek.LockBits(new Rectangle(0, 0, obrazek.Width, obrazek.Height),
-                    ImageLockMode.ReadWrite, obrazek.PixelFormat);
-            foreach (var m in souradniceZiskanychKrizu)
-            {
-                //vykresleni bodu - stredu nalezeneho krizku
-                Drawing.Rectangle(data, new Rectangle(m.X, m.Y, 2, 2), Color.Red);
-
-            }
-            obrazek.UnlockBits(data);
-            obrazek.Save("temp\\krizek_nelezene.png");
-            Console.WriteLine(souradniceZiskanychKrizu.Count);
-
-            /* Pokusik */
-            /* foreach (var item in souradniceZiskanychKrizu)
-             {
-                 Console.WriteLine("x> " + item.X + "Y: " + item.Y);
-             }
-
-             if (souradniceZiskanychKrizu.Count < 90)
-             {
-                 //musim dopocitat ostatni body
-                 DopocitejOstatniBody(souradniceZiskanychKrizu, slozka); //metoda nebude nic vracet jenom tam proste doda dalsi body
-             } */
-
-            // v dalsim kroce musim urcit sirku a vysku misky a tu budu rezat vsude stejnou
-            // neco ve smyslu nejmensi rozdil mezi vsemi body vetesi jak 10 a vyska to same 
+            ObecneMetody.vykresliNalezeneKrizkyDoObrazku(slozka, zmencovaciKonstanta, dopocitaneKrizky, "D:\\repos\\DP\\DP\\temp\\krizek_nelezene.png");
 
 
 
         }
 
-        static void DopocitejOstatniBody(List<RozsirenyBod> souradniceZiskanychKrizu, string slozka)
-        {
-
-            souradniceZiskanychKrizu.Add(new RozsirenyBod(5, 6, true, 10));
-        }
 
         /* Metoda, která na vstupu dostane složku s obrázky na kterých bude hledat køížky. Postupnì projde všechny obrázky - ne všechny køížky jdou detekovat. */
         static List<RozsirenyBod> ZiskejKrizkyZeVsechObrazku(string slozka)
@@ -72,7 +37,7 @@ namespace DP
             /* Naèteme pole souborù, které budeme procháze, jako jejich názvy. */
             string[] slozkaObrazku = Directory.GetFiles(slozka, "*.png", SearchOption.TopDirectoryOnly);
             /* Definice pomocné promìnné - jaký vzor budu hledat. */
-            string umisteniVzoru = "temp\\1_vzor.png";
+            string umisteniVzoru = "D:\\repos\\DP\\DP\\temp\\1_vzor.png";
             Bitmap vzor = (Bitmap)Bitmap.FromFile(umisteniVzoru);
 
             /*Definice šedého filtru. */
@@ -114,7 +79,7 @@ namespace DP
 
                 /* Zastavím hodiny pro jednotlivé obrázky a vypíšu info o tom jak dlouho trvalo naèíst  */
                 hodiny.Stop();
-                Console.WriteLine("Obr: " + nazevObrazku + " trval " + hodiny.Elapsed.TotalSeconds + " sekund.");
+                Console.WriteLine("Hledání køížkù v obrázku Obr: " + nazevObrazku + " trvalo " + hodiny.Elapsed.TotalSeconds + " sekund.");
 
             }
             /* V této èásti probìhne sjednocení nalezených bodù. Z každého brazku mùžu mít jiné køížky nalezené a vìtšina jich je tam víckrát s nestejnými souøadnicemi - mohou se lišit tøeba i o 1 pixel na ose X napø.
@@ -161,7 +126,7 @@ namespace DP
             nalezeneBody = nalezeneBody.OrderBy(p => p.kolikaty).ToList();
 
             /* Z nalezenýchBodù vyfiltruju pouze tìch pár optimálních. */
-            List<RozsirenyBod> finálniNalezeneBody = new List<RozsirenyBod>();
+            List<RozsirenyBod> filtrNalezeneBody = new List<RozsirenyBod>();
             for (int i = 0; i < nalezeneBody.Count; i++)
             {
                 sumaX = sumaX + nalezeneBody[i].X;
@@ -185,7 +150,7 @@ namespace DP
                         }
                     }
                     /* Neco jako filtrace, proste pridavam jen ty body co potrebuju - ty :optimamalni: */
-                    finálniNalezeneBody.Add(new RozsirenyBod(prumerX, prumerY, false, nalezeneBody[i].kolikaty));
+                    filtrNalezeneBody.Add(new RozsirenyBod(prumerX, prumerY, false, nalezeneBody[i].kolikaty));
                     /* Null promennych */
                     sumaX = 0;
                     sumaY = 0;
@@ -194,7 +159,313 @@ namespace DP
                     prumerY = 0;
                 }
             }
-            return finálniNalezeneBody;
+            return filtrNalezeneBody;
+        }
+
+
+        static List<RozsirenyBod> DopocitejOstatniBody(List<RozsirenyBod> souradniceZiskanychKrizu, string slozka)
+        {
+
+            /* Rozmery obrazku - tady mozna at se nacte jen prvni */
+            string[] slozkaObrazku = Directory.GetFiles(slozka, "*.png", SearchOption.TopDirectoryOnly);
+            Bitmap image = (Bitmap)Bitmap.FromFile(slozkaObrazku[0]);
+
+            ResizeBilinear zmenseniObrazku = new ResizeBilinear(image.Width / zmencovaciKonstanta, image.Height / zmencovaciKonstanta);
+            image = zmenseniObrazku.Apply(image);
+            int sirka = image.Width;
+            int vyska = image.Height;
+
+
+            /* List nalezenych køížkù je po sloupcích takze ja projdu list a podivam se kde se X lisi o par pixelu zase tydle X dopocitam tak aby v každé skupinì bylo 9 kusù */
+            int sumaX = 0, sumaY = 0, pocet = 0, prumerX = 0, prumerY = 0, k = 0;
+            List<int> prumerneX = new List<int>();
+            List<int> prumerneY = new List<int>();
+
+            /* Dopoèet X souøadnic, po tomto cyklu budu mit  */
+            for (int i = 0; i < souradniceZiskanychKrizu.Count; i++)
+            {
+                sumaX = sumaX + souradniceZiskanychKrizu[i].X;
+                pocet++;
+                if (((i + 1) < souradniceZiskanychKrizu.Count && Math.Abs(souradniceZiskanychKrizu[i].X - souradniceZiskanychKrizu[i + 1].X) > 5) || ((i + 1) == souradniceZiskanychKrizu.Count))
+                {
+
+                    prumerX = (int)Math.Round(((double)(sumaX / pocet)), 0);
+                    prumerneX.Add(prumerX);
+                    prumerX = 0;
+                    sumaX = 0;
+                    pocet = 0;
+                }
+
+            }
+
+            souradniceZiskanychKrizu = souradniceZiskanychKrizu.OrderBy(p => p.Y).ToList();
+
+            for (int i = 0; i < souradniceZiskanychKrizu.Count; i++)
+            {
+                sumaY = sumaY + souradniceZiskanychKrizu[i].Y;
+                pocet++;
+                if (((i + 1) < souradniceZiskanychKrizu.Count && Math.Abs(souradniceZiskanychKrizu[i].Y - souradniceZiskanychKrizu[i + 1].Y) > 5) || ((i + 1) == souradniceZiskanychKrizu.Count))
+                {
+
+                    prumerY = (int)Math.Round(((double)(sumaY / pocet)), 0);
+                    prumerneY.Add(prumerY);
+                    prumerY = 0;
+                    sumaY = 0;
+                    pocet = 0;
+                }
+
+            }
+
+
+
+            /* V pøípadì že mi nìjaké body chybí tak je dopoèítam podle vzdalenosti */
+            /* chzbí mi nìjaký sloupec */
+
+            int prumernaVzdalenost;
+            int sumaVzdalenosti = 0;
+            if (prumerneX.Count < 10)
+            {
+                /* projdu kazdou souradnici radku a vypocitam vzdalenost */
+                for (int i = 0; (i + 1) < prumerneX.Count; i++)
+                {
+                    sumaVzdalenosti += Math.Abs(prumerneX[i] - prumerneX[i + 1]);
+                    //Console.WriteLine("Vzdalenost: " + Math.Abs(prumerneX[i] - prumerneX[i + 1]));
+                }
+                prumernaVzdalenost = (int)Math.Round(((double)(sumaVzdalenosti / (prumerneX.Count - 1))), 0);
+                // Console.WriteLine("Prumer Vzdalenost: " + prumernaVzdalenost);
+
+                /* Teï musim zjistit jestli mezi každým bodem cca prùmìrná vzdálenost, tzn jestli vzdálenost je +/- 5 pixelù dejme tomu a když nebude tak pøidám bod + prumérná vzdálenost*/
+
+                /* ted budu prochazet prumerneX a cekovat vzdalenost  */
+
+                for (int i = 0; i < prumerneX.Count; i++)
+                {
+                    if (i == 0)
+                    {
+                        if (prumerneX[i] > (prumernaVzdalenost + 5))
+                        {
+                            prumerneX.Add(prumernaVzdalenost);
+                        }
+                    }
+                    else if ((i + 1) == prumerneX.Count)
+                    {
+                        if (Math.Abs(prumerneX[i] - sirka) > (prumernaVzdalenost + 5))
+                        {
+                            prumerneX.Add(prumerneX[i] + prumernaVzdalenost);
+                        }
+                    }
+                    else
+                    {
+                        if (Math.Abs(prumerneX[i] - prumerneX[i + 1]) > (prumernaVzdalenost + 5))
+                        {
+                            prumerneX.Add(prumerneX[i] + prumernaVzdalenost);
+                        }
+                    }
+                }
+
+            }
+
+
+
+
+
+
+
+
+
+            sumaVzdalenosti = 0;
+            /* chbí mi nìjaký radek */
+            if (prumerneY.Count < 9)
+            {
+                for (int i = 0; (i + 1) < prumerneY.Count; i++)
+                {
+                    sumaVzdalenosti += Math.Abs(prumerneY[i] - prumerneY[i + 1]);
+                    //Console.WriteLine("Vzdalenost: " + Math.Abs(prumerneY[i] - prumerneY[i + 1]));
+                }
+                prumernaVzdalenost = (int)Math.Round(((double)(sumaVzdalenosti / (prumerneY.Count - 1))), 0);
+                //Console.WriteLine("Prumer Vzdalenost: " + prumernaVzdalenost);
+
+
+                for (int i = 0; i < prumerneY.Count; i++)
+                {
+                    if (i == 0)
+                    {
+                        if (prumerneY[i] > (prumernaVzdalenost + 5))
+                        {
+                            prumerneY.Add(prumernaVzdalenost);
+                        }
+                    }
+                    else if ((i + 1) == prumerneY.Count)
+                    {
+                        if (Math.Abs(prumerneY[i] - vyska) > (prumernaVzdalenost + 5))
+                        {
+                            prumerneY.Add(prumerneY[i] + prumernaVzdalenost);
+                        }
+                    }
+                    else
+                    {
+                        if (Math.Abs(prumerneY[i] - prumerneY[i + 1]) > (prumernaVzdalenost + 5))
+                        {
+                            prumerneY.Add(prumerneY[i] + prumernaVzdalenost);
+                        }
+                    }
+                }
+            }
+
+
+
+            /* Definice návratu */
+            List<RozsirenyBod> dopocitaneKrizky = new List<RozsirenyBod>();
+            for (int i = 0; i < prumerneX.Count; i++)
+            {
+                for (int j = 0; j < prumerneY.Count; j++)
+                {
+                    dopocitaneKrizky.Add(new RozsirenyBod(prumerneX[i], prumerneY[j]));
+                }
+            }
+
+            //RozrezNaMisky(prumerneX, prumerneY, slozka);
+            /* Kontrolní výpis 
+                        foreach (var item in prumerneX)
+                        {
+                            Console.WriteLine(item);
+                        }
+            */
+
+            return dopocitaneKrizky;
+        }
+
+        static void RozrezNaMisky(List<int> prumerneX, List<int> prumerneY, string slozka)
+        {
+            /* Vytvoøím si složky kam budu ukladat jednotlivé misky to pak muzu nìkam dat dolu protože budu procházet jednotlivé køížky */
+            for (int i = 1; i <= (prumerneX.Count * prumerneY.Count); i++)
+            {
+                Directory.CreateDirectory(slozka + "\\" + i.ToString("D3"));
+            }
+
+
+            string[] slozkaObrazku = Directory.GetFiles(slozka, "*.png", SearchOption.TopDirectoryOnly);
+            for (int o = 1; o <= slozkaObrazku.Length; o++)
+            {
+                Bitmap obrazek = (Bitmap)Bitmap.FromFile(slozkaObrazku[o - 1]);
+                ResizeBilinear zmenseniObrazku = new ResizeBilinear(obrazek.Width / zmencovaciKonstanta, obrazek.Height / zmencovaciKonstanta);
+                obrazek = zmenseniObrazku.Apply(obrazek);
+                int sirka = obrazek.Width;
+                int vyska = obrazek.Height;
+
+                int[] rozmery = new int[4];
+                Rectangle vyrezMisky = new Rectangle(rozmery[0], rozmery[1], rozmery[2], rozmery[3]);
+                for (int i = 0; i < prumerneY.Count; i++)
+                {
+                    for (int j = 0; j < prumerneX.Count; j++)
+                    {
+                        if (i == 0) // jsem li na prvnim radku tak musim orezat jen do prvni vysky
+                        {
+                            if (j == 0) // jsem li v prvnim radku
+                            {
+                                rozmery[0] = 0; // X zaèatku
+                                rozmery[1] = 0; // Y zaèatku
+                                rozmery[2] = prumerneX[j] - 1; // šíøka
+                                rozmery[3] = prumerneY[i] - 1; // výška
+                            }
+                            else if ((j + 1) == prumerneY.Count) // jsem li v poslednim radku - budu rezat max po vysku
+                            {
+                                rozmery[0] = prumerneX[j]; // X zaèatku
+                                rozmery[1] = 0; // Y zaèatku
+                                rozmery[2] = Math.Abs(prumerneX[j] - sirka) - 1; // šíøka
+                                rozmery[3] = prumerneY[i] - 1; // výška
+
+                            }
+                            else// jsem uprostred nekde
+                            {
+                                rozmery[0] = prumerneX[j]; // X zaèatku
+                                rozmery[1] = 0; // Y zaèatku
+                                rozmery[2] = Math.Abs(prumerneX[j] - prumerneX[j + 1]) - 1; // šíøka
+                                rozmery[3] = prumerneY[i] - 1; // výška
+                            }
+                        }
+                        else if ((i + 1) == prumerneX.Count) // jsem li v poslednim radku - budu rezat max po sirku
+                        {
+                            if (j == 0) // jsem li v prvnim sloupci
+                            {
+                                rozmery[0] = 0; // X zaèatku
+                                rozmery[1] = prumerneY[i]; // Y zaèatku
+                                rozmery[2] = prumerneX[j] - 1; // šíøka
+                                rozmery[3] = Math.Abs(prumerneY[i] - vyska) - 1; // výška
+                            }
+                            else if ((j + 1) == prumerneY.Count) // jsem li v poslednim sloupci - budu rezat max po vysku
+                            {
+                                rozmery[0] = prumerneX[j]; // X zaèatku
+                                rozmery[1] = prumerneY[i]; // Y zaèatku
+                                rozmery[2] = Math.Abs(prumerneX[j] - sirka) - 1; // šíøka
+                                rozmery[3] = Math.Abs(prumerneY[i] - vyska) - 1;
+
+                            }
+                            else// jsem uprostred nekde
+                            {
+                                rozmery[0] = prumerneX[j]; // X zaèatku
+                                rozmery[1] = prumerneY[i]; // Y zaèatku
+                                rozmery[2] = Math.Abs(prumerneX[j] - prumerneX[j + 1]) - 1; // šíøka
+                                rozmery[3] = Math.Abs(prumerneY[i] - vyska) - 1; // výška
+                            }
+
+                        }
+                        else// jsem uprostred nekde
+                        {
+                            if (j == 0) // jsem li v prvnim sloupci
+                            {
+                                rozmery[0] = 0; // X zaèatku
+                                rozmery[1] = prumerneY[i - 1]; // Y zaèatku
+                                rozmery[2] = prumerneX[j] - 1; // šíøka
+                                rozmery[3] = Math.Abs(prumerneY[i] - prumerneY[i - 1]) - 1; // výška
+                            }
+                            else if ((j + 1) == prumerneY.Count) // jsem li v poslednim sloupci - budu rezat max po vysku
+                            {
+
+
+                            }
+                            else// jsem uprostred nekde
+                            {
+
+                            }
+                        }
+                        vyrezMisky = new Rectangle(rozmery[0], rozmery[1], rozmery[2], rozmery[3]);
+                    }
+                }
+
+
+
+                Bitmap orezanyObrazek = obrazek.Clone(vyrezMisky, obrazek.PixelFormat);
+                string nazevObr = ObecneMetody.DatumCasZNazvu(slozkaObrazku[o - 1], "\\", ".png");
+                orezanyObrazek.Save(slozka + "\\" + o.ToString("D3") + "\\" + nazevObr + ".png");
+
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         }
     }
 }

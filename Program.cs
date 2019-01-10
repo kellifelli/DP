@@ -20,9 +20,12 @@ namespace DP
             //ted mam v temp\\orezany\\01 orezany obrazky a ve filePaths mam jejich nazvy
             //RozrezaniNaMisky.RozrezObrazkyVeSlozce(orezanyObrazky);
 
-
-            RozrezaniNaMisky.RozrezObrazkyVeSlozce("temp\\01\\orezany\\");
-
+            // D:\\repos\\DP\\DP\\temp\\01\\orezany
+            /* Console.WriteLine("zadejte cestu: ");
+             string cesta = Console.ReadLine();
+  */
+            RozrezaniNaMisky.RozrezObrazkyVeSlozce("D:\\repos\\DP\\DP\\temp\\01\\orezany");
+            Console.ReadKey(true);
             //Test.NactiBody();
         }
 

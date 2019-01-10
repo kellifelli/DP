@@ -1,0 +1,14 @@
+D:\repos\DP\DP\bin\Release\netcoreapp2.1\win10-x64\hostpolicy.dll
+D:\repos\DP\DP\bin\Release\netcoreapp2.1\win10-x64\hostfxr.dll
+D:\repos\DP\DP\bin\Release\netcoreapp2.1\win10-x64\DP.exe
+D:\repos\DP\DP\bin\Release\netcoreapp2.1\win10-x64\DP.deps.json
+D:\repos\DP\DP\bin\Release\netcoreapp2.1\win10-x64\DP.runtimeconfig.json
+D:\repos\DP\DP\bin\Release\netcoreapp2.1\win10-x64\DP.runtimeconfig.dev.json
+D:\repos\DP\DP\bin\Release\netcoreapp2.1\win10-x64\DP.dll
+D:\repos\DP\DP\bin\Release\netcoreapp2.1\win10-x64\DP.pdb
+D:\repos\DP\DP\obj\Release\netcoreapp2.1\win10-x64\DP.csprojAssemblyReference.cache
+D:\repos\DP\DP\obj\Release\netcoreapp2.1\win10-x64\DP.csproj.CoreCompileInputs.cache
+D:\repos\DP\DP\obj\Release\netcoreapp2.1\win10-x64\DP.AssemblyInfoInputs.cache
+D:\repos\DP\DP\obj\Release\netcoreapp2.1\win10-x64\DP.AssemblyInfo.cs
+D:\repos\DP\DP\obj\Release\netcoreapp2.1\win10-x64\DP.dll
+D:\repos\DP\DP\obj\Release\netcoreapp2.1\win10-x64\DP.pdb
