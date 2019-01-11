@@ -12,47 +12,16 @@ namespace DP
 {
     class DetekceZelene
     {
-
-        static string ZiskejNazev(string obrazek)
-        {
-            string prvni_slovo = "\\";
-            string druhe_slovo = ".png";
-            int first = obrazek.LastIndexOf(prvni_slovo);
-            int last = obrazek.LastIndexOf(druhe_slovo);
-            string bezRound = obrazek.Substring(0, last);
-            string bezFirst = obrazek.Substring(0, first + prvni_slovo.Length);
-
-            return obrazek.Substring(bezFirst.Length, bezRound.Length - bezFirst.Length);
-        }
-
-        static Bitmap DejRozdilObrazku(string obrazek1, string obrazek2, Color diffColor)
-        {
-            Bitmap img1 = (Bitmap)Bitmap.FromFile(obrazek1);
-            Bitmap img2 = (Bitmap)Bitmap.FromFile(obrazek2);
-            Bitmap img3 = new Bitmap(img1.Width - 2, img1.Height - 2);
-
-
-
-
-            for (int y = 0; y < img3.Height; y++)
-                for (int x = 0; x < img3.Width; x++)
-                {
-                    Color c1 = img1.GetPixel(x, y);
-                    Color c2 = img2.GetPixel(x, y);
-                    if (c1 == c2) img3.SetPixel(x, y, c1);
-                    else img3.SetPixel(x, y, diffColor);
-                }
-
-
-            return img3;
-
-
-        }
-
-
         public static void NajdiCasRustu(string slozka)
         {
-
+            string[] directories = Directory.GetDirectories(slozka);
+            //NajdiCasRustuVmisce(directories[19], 19);
+            for (int i = 1; i <= directories.Length; i++)
+            {
+                NajdiCasRustuVmisce(directories[i - 1], i);
+            }
+ 
+            /* 
             string[] seznamObrazku = Directory.GetFiles(slozka, "*.png", SearchOption.TopDirectoryOnly);
 
             Console.WriteLine("prochazim misku");
@@ -62,9 +31,46 @@ namespace DP
                 Bitmap dif = DejRozdilObrazku(seznamObrazku[i - 1], seznamObrazku[i], Color.Transparent);
                 Directory.CreateDirectory(slozka + "test\\");
                 dif.Save(slozka + "test\\" + i + ".png");
+            }*/
+
+
+        }
+
+        public static void NajdiCasRustuVmisce(string slozka, int i)
+        {
+
+            /* Definice rozostøovacího filtru */
+            GaussianBlur filterBlur = new GaussianBlur(10, 10);
+            
+            /* Definice modrého filtru */
+            ColorFiltering filterGreen = new ColorFiltering();
+            filterGreen.Red = new IntRange(55, 80);
+            filterGreen.Green = new IntRange(55, 100);
+            filterGreen.Blue = new IntRange(40, 65);
+
+
+            /* Naètu si obrazky za každou misku */
+            string[] seznamObrazku = Directory.GetFiles(slozka, "*.png", SearchOption.TopDirectoryOnly);
+            /* Bitmap image1 = (Bitmap)Bitmap.FromFile(seznamObrazku[42]);
+             Bitmap image2 = (Bitmap)Bitmap.FromFile(seznamObrazku[43]);
+             string nazevObr = ObecneMetody.DatumCasZNazvu(seznamObrazku[42], "\\", ".png");
+             filterBlur.ApplyInPlace(image1);
+             image1.Save(slozka + "\\" + nazevObr + "_sedy.png");*/
+
+            foreach (string obrazek in seznamObrazku)
+            {
+
+                Bitmap image = (Bitmap)Bitmap.FromFile(obrazek);
+                string nazevObr = ObecneMetody.DatumCasZNazvu(obrazek, "\\", ".png");
+                filterBlur.ApplyInPlace(image);
+                //filterGreen.ApplyInPlace(image);
+                image.Save(slozka + "\\" + nazevObr + "_sedy.png");
+                //Console.WriteLine(obrazek);
             }
 
 
         }
+
+
     }
 }

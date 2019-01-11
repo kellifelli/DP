@@ -13,7 +13,7 @@ namespace DP
 {
     class RozrezaniNaMisky
     {
-        static int zmencovaciKonstanta = 5;
+        static int zmencovaciKonstanta = 3;
 
         /* Metoda která dostane na vstupu název složky, kde jsou oøezané obrázky od modré misky a rozdìlí je na misky.  */
         public static void RozrezObrazkyVeSlozce(string slozka)
@@ -52,6 +52,7 @@ namespace DP
             /* Vytvoøím si kolekci rozšíøených bodù, kde si budu ukládat jednotlivé nalezené souøadnice køížkù. */
             List<RozsirenyBod> nalezeneBody = new List<RozsirenyBod>();
 
+            /* Todle by bylo dobré rozhodit do více vláken. */
             foreach (string soubor in slozkaObrazku)
             {
                 /* Spouštím hodiny abych vedìl jak dlouho trvají jednotlivé obrázky. */
@@ -177,7 +178,7 @@ namespace DP
 
 
             /* List nalezenych køížkù je po sloupcích takze ja projdu list a podivam se kde se X lisi o par pixelu zase tydle X dopocitam tak aby v každé skupinì bylo 9 kusù */
-            int sumaX = 0, sumaY = 0, pocet = 0, prumerX = 0, prumerY = 0, k = 0;
+            int sumaX = 0, sumaY = 0, pocet = 0, prumerX = 0, prumerY = 0; 
             List<int> prumerneX = new List<int>();
             List<int> prumerneY = new List<int>();
 
@@ -324,7 +325,7 @@ namespace DP
                 }
             }
 
-            //RozrezNaMisky(prumerneX, prumerneY, slozka);
+            RozrezNaMisky(prumerneX, prumerneY, slozka);
             /* Kontrolní výpis 
                         foreach (var item in prumerneX)
                         {
@@ -338,7 +339,7 @@ namespace DP
         static void RozrezNaMisky(List<int> prumerneX, List<int> prumerneY, string slozka)
         {
             /* Vytvoøím si složky kam budu ukladat jednotlivé misky to pak muzu nìkam dat dolu protože budu procházet jednotlivé køížky */
-            for (int i = 1; i <= (prumerneX.Count * prumerneY.Count); i++)
+            for (int i = 1; i <= ((prumerneX.Count + 1) * (prumerneY.Count + 1)); i++)
             {
                 Directory.CreateDirectory(slozka + "\\" + i.ToString("D3"));
             }
@@ -355,117 +356,100 @@ namespace DP
 
                 int[] rozmery = new int[4];
                 Rectangle vyrezMisky = new Rectangle(rozmery[0], rozmery[1], rozmery[2], rozmery[3]);
-                for (int i = 0; i < prumerneY.Count; i++)
+                int miska = 1;
+                for (int i = 0; i <= prumerneY.Count; i++) //icko mi oznacuje radek
                 {
-                    for (int j = 0; j < prumerneX.Count; j++)
+                    for (int j = 0; j <= prumerneX.Count; j++)
                     {
-                        if (i == 0) // jsem li na prvnim radku tak musim orezat jen do prvni vysky
+                        if (i == 0)                                                               // jsem li na prvnim radku  
                         {
-                            if (j == 0) // jsem li v prvnim radku
+                            if (j == 0)                                                                 // jsem li v prvnim sloupci
                             {
                                 rozmery[0] = 0; // X zaèatku
                                 rozmery[1] = 0; // Y zaèatku
                                 rozmery[2] = prumerneX[j] - 1; // šíøka
                                 rozmery[3] = prumerneY[i] - 1; // výška
                             }
-                            else if ((j + 1) == prumerneY.Count) // jsem li v poslednim radku - budu rezat max po vysku
+                            else if (j == prumerneX.Count)                                              // jsem li v poslednim sloupci 
                             {
-                                rozmery[0] = prumerneX[j]; // X zaèatku
+                                rozmery[0] = prumerneX[j - 1]; // X zaèatku
                                 rozmery[1] = 0; // Y zaèatku
-                                rozmery[2] = Math.Abs(prumerneX[j] - sirka) - 1; // šíøka
+                                rozmery[2] = Math.Abs(prumerneX[j - 1] - sirka) - 1; // šíøka
                                 rozmery[3] = prumerneY[i] - 1; // výška
 
                             }
-                            else// jsem uprostred nekde
+                            else                                                                        // jsem li v prostrednim sloupci
                             {
-                                rozmery[0] = prumerneX[j]; // X zaèatku
+                                rozmery[0] = prumerneX[j - 1]; // X zaèatku
                                 rozmery[1] = 0; // Y zaèatku
-                                rozmery[2] = Math.Abs(prumerneX[j] - prumerneX[j + 1]) - 1; // šíøka
+                                rozmery[2] = Math.Abs(prumerneX[j] - prumerneX[j - 1]) - 1; // šíøka
                                 rozmery[3] = prumerneY[i] - 1; // výška
                             }
                         }
-                        else if ((i + 1) == prumerneX.Count) // jsem li v poslednim radku - budu rezat max po sirku
+                        else if (i == prumerneY.Count)                                            // jsem li v poslednim radku 
                         {
-                            if (j == 0) // jsem li v prvnim sloupci
-                            {
-                                rozmery[0] = 0; // X zaèatku
-                                rozmery[1] = prumerneY[i]; // Y zaèatku
-                                rozmery[2] = prumerneX[j] - 1; // šíøka
-                                rozmery[3] = Math.Abs(prumerneY[i] - vyska) - 1; // výška
-                            }
-                            else if ((j + 1) == prumerneY.Count) // jsem li v poslednim sloupci - budu rezat max po vysku
-                            {
-                                rozmery[0] = prumerneX[j]; // X zaèatku
-                                rozmery[1] = prumerneY[i]; // Y zaèatku
-                                rozmery[2] = Math.Abs(prumerneX[j] - sirka) - 1; // šíøka
-                                rozmery[3] = Math.Abs(prumerneY[i] - vyska) - 1;
-
-                            }
-                            else// jsem uprostred nekde
-                            {
-                                rozmery[0] = prumerneX[j]; // X zaèatku
-                                rozmery[1] = prumerneY[i]; // Y zaèatku
-                                rozmery[2] = Math.Abs(prumerneX[j] - prumerneX[j + 1]) - 1; // šíøka
-                                rozmery[3] = Math.Abs(prumerneY[i] - vyska) - 1; // výška
-                            }
-
-                        }
-                        else// jsem uprostred nekde
-                        {
-                            if (j == 0) // jsem li v prvnim sloupci
+                            if (j == 0)                                                                 // jsem li v prvnim sloupci
                             {
                                 rozmery[0] = 0; // X zaèatku
                                 rozmery[1] = prumerneY[i - 1]; // Y zaèatku
                                 rozmery[2] = prumerneX[j] - 1; // šíøka
-                                rozmery[3] = Math.Abs(prumerneY[i] - prumerneY[i - 1]) - 1; // výška
+                                rozmery[3] = Math.Abs(prumerneY[i - 1] - vyska) - 1; // výška
                             }
-                            else if ((j + 1) == prumerneY.Count) // jsem li v poslednim sloupci - budu rezat max po vysku
+                            else if (j == prumerneX.Count)                                        // jsem li v poslednim sloupci 
                             {
-
+                                rozmery[0] = prumerneX[j - 1]; // X zaèatku
+                                rozmery[1] = prumerneY[i - 1]; // Y zaèatku
+                                rozmery[2] = Math.Abs(prumerneX[j - 1] - sirka) - 1; // šíøka
+                                rozmery[3] = Math.Abs(prumerneY[i - 1] - vyska) - 1; // výška
 
                             }
-                            else// jsem uprostred nekde
+                            else                                                                        // jsem uprostred sloupcu
                             {
+                                rozmery[0] = prumerneX[j - 1]; // X zaèatku
+                                rozmery[1] = prumerneY[i - 1]; // Y zaèatku
+                                rozmery[2] = Math.Abs(prumerneX[j - 1] - prumerneX[j]) - 1; // šíøka
+                                rozmery[3] = Math.Abs(prumerneY[i - 1] - vyska) - 1; // výška
+                            }
 
+                        }
+                        else                                                                    // jsem uprostred radkama
+                        {
+                            if (j == 0)                                                                 // jsem li v prvnim sloupci
+                            {
+                                rozmery[0] = 0; // X zaèatku
+                                rozmery[1] = prumerneY[i - 1]; // Y zaèatku
+                                rozmery[2] = prumerneX[j] - 1; // šíøka
+                                rozmery[3] = Math.Abs(prumerneY[i - 1] - prumerneY[i]) - 1; // výška
+                            }
+                            else if (j == prumerneX.Count)                                              // jsem li v poslednim sloupci  
+                            {
+                                rozmery[0] = prumerneX[j - 1]; // X zaèatku
+                                rozmery[1] = prumerneY[i - 1]; // Y zaèatku
+                                rozmery[2] = Math.Abs(prumerneX[j - 1] - sirka) - 1; // šíøka
+                                rozmery[3] = Math.Abs(prumerneY[i - 1] - prumerneY[i]) - 1; // výška
+
+                            }
+                            else                                                                         // jsem uprostred nekde
+                            {
+                                rozmery[0] = prumerneX[j - 1]; // X zaèatku
+                                rozmery[1] = prumerneY[i - 1]; // Y zaèatku
+                                rozmery[2] = Math.Abs(prumerneX[j - 1] - prumerneX[j]) - 1; // šíøka
+                                rozmery[3] = Math.Abs(prumerneY[i - 1] - prumerneY[i]) - 1; // výška
                             }
                         }
                         vyrezMisky = new Rectangle(rozmery[0], rozmery[1], rozmery[2], rozmery[3]);
+                        Bitmap orezanyObrazek = obrazek.Clone(vyrezMisky, obrazek.PixelFormat);
+                        string nazevObr = ObecneMetody.DatumCasZNazvu(slozkaObrazku[o - 1], "\\", ".png");
+                        orezanyObrazek.Save(slozka + "\\" + miska.ToString("D3") + "\\" + nazevObr + ".png");
+                        miska++;
                     }
                 }
 
+                miska = 1;
 
 
-                Bitmap orezanyObrazek = obrazek.Clone(vyrezMisky, obrazek.PixelFormat);
-                string nazevObr = ObecneMetody.DatumCasZNazvu(slozkaObrazku[o - 1], "\\", ".png");
-                orezanyObrazek.Save(slozka + "\\" + o.ToString("D3") + "\\" + nazevObr + ".png");
 
             }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         }
     }
 }

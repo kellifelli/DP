@@ -21,7 +21,7 @@ namespace DP
             /* zaèínám mìøit celkový èas*/
             var hodiny = System.Diagnostics.Stopwatch.StartNew();
             /* Vytvoøím si cílovou složku pro uložení oøezaných obrazkù. */
-            string nazevSlozkyOrezanych = nazevSlozky + "orezany\\";
+            string nazevSlozkyOrezanych = nazevSlozky + "\\orezany\\";
             Directory.CreateDirectory(nazevSlozkyOrezanych);
 
             /* Získej názvy všech .png souborù (všech obrazkù) ve vstupní složce. */
